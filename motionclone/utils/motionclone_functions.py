@@ -28,7 +28,7 @@ def obtain_motion_representation(self, generator=None, motion_representation_pat
     
     video_data = video_preprocess(self.input_config.video_path, self.input_config.height, 
                                   self.input_config.width, self.input_config.video_length,duration=duration)
-    video_latents = self.vae.encode(video_data.to(self.vae.dtype).to(self.vae.device)).latent_dist.sample(None)
+    video_latents = self.vae.encode(video_data.to(self.vae.dtype).to(self.vae.device)).latent_dist.mode()
     video_latents = self.vae.config.scaling_factor * video_latents
     video_latents = video_latents.unsqueeze(0)
     video_latents = einops.rearrange(video_latents, "b f c h w -> b c f h w")
