@@ -122,6 +122,13 @@ Manually download "v3_sd15_sparsectrl_rgb.ckpt" and "v3_sd15_sparsectrl_scribble
 ```
 python t2v_video_sample.py --inference_config "configs/t2v_camera.yaml" --examples "configs/t2v_camera.jsonl"
 ```
+
+https://github.com/user-attachments/assets/2656a49a-c57d-4f89-bc65-5ec09ac037ea
+
+
+
+
+
 ### Perform Text-to-video generation with customized object motion
 ```
 python t2v_video_sample.py --inference_config "configs/t2v_object.yaml" --examples "configs/t2v_object.jsonl"
