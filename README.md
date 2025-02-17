@@ -2,6 +2,32 @@
 This repository is the official implementation of [MotionClone](https://arxiv.org/abs/2406.05338). It is a **training-free framework** that enables motion cloning from a reference video for controllable video generation, **without cumbersome video inversion processes**.
 <details><summary>Click for the full abstract of MotionClone</summary>
 
+```bash
+sudo apt-get update && sudo apt-get install git-lfs ffmpeg cbm
+
+conda create --name py310 python=3.10
+conda activate py310
+pip install ipykernel
+python -m ipykernel install --user --name py310 --display-name "py310"
+
+git clone https://github.com/svjack/MotionClone && cd MotionClone
+pip install -r requirements.txt
+
+mkdir -p models
+git clone https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5 models/StableDiffusion/
+
+mkdir -p models/DreamBooth_LoRA
+wget https://huggingface.co/svjack/Realistic-Vision-V6.0-B1/resolve/main/realisticVisionV60B1_v51VAE.safetensors -O models/DreamBooth_LoRA/realisticVisionV60B1_v51VAE.safetensors
+
+mkdir -p models/Motion_Module
+wget https://huggingface.co/guoyww/animatediff/resolve/main/v3_sd15_mm.ckpt -O models/Motion_Module/v3_sd15_mm.ckpt
+wget https://huggingface.co/guoyww/animatediff/resolve/main/v3_sd15_adapter.ckpt -O models/Motion_Module/v3_sd15_adapter.ckpt
+
+mkdir -p models/SparseCtrl
+wget https://huggingface.co/guoyww/animatediff/resolve/main/v3_sd15_sparsectrl_rgb.ckpt -O models/SparseCtrl/v3_sd15_sparsectrl_rgb.ckpt
+wget https://huggingface.co/guoyww/animatediff/resolve/main/v3_sd15_sparsectrl_scribble.ckpt -O models/SparseCtrl/v3_sd15_sparsectrl_scribble.ckpt
+```
+
 > Motion-based controllable video generation offers the potential for creating captivating visual content. Existing methods typically necessitate model training to encode particular motion cues or incorporate fine-tuning to inject certain motion patterns, resulting in limited flexibility and generalization.
 In this work, we propose **MotionClone** a training-free framework that enables motion cloning from reference videos to versatile motion-controlled video generation, including text-to-video and image-to-video. Based on the observation that the dominant components in temporal-attention maps drive motion synthesis, while the rest mainly capture noisy or very subtle motions, MotionClone utilizes sparse temporal attention weights as motion representations for motion guidance, facilitating diverse motion transfer across varying scenarios. Meanwhile, MotionClone allows for the direct extraction of motion representation through a single denoising step, bypassing the cumbersome inversion processes and thus promoting both efficiency and flexibility. 
 Extensive experiments demonstrate that MotionClone exhibits proficiency in both global camera motion and local object motion, with notable superiority in terms of motion fidelity, textual alignment, and temporal consistency.
