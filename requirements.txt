@@ -1,0 +1,31 @@
+# requirements.txt
+
+# Python 版本建议在安装环境中设置，而不是在 requirements.txt 中指定
+# python=3.11.3
+
+# PyTorch 及相关依赖
+#torch==2.0.1+cu118 -f https://download.pytorch.org/whl/cu118/torch_stable.html
+#torchvision==0.15.2+cu118 -f https://download.pytorch.org/whl/cu118/torch_stable.html
+torch==2.0.1
+torchvision==0.15.2
+
+# 其他依赖
+#pip
+accelerate
+diffusers==0.16.0
+transformers==4.28.1
+xformers==0.0.20
+imageio[ffmpeg]
+decord==0.6.0
+gdown
+einops
+omegaconf
+safetensors
+gradio
+wandb
+triton
+opencv-python
+
+gradio
+huggingface_hub
+httpx[socks]
