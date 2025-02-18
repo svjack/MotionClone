@@ -67,8 +67,11 @@ pip install -r requirements.txt
 python t2v_video_app.py
 ```
 - Ref
+  
 https://github.com/user-attachments/assets/5e833671-0827-4b10-a136-6f2fe3f34661
+
 - Gen
+
 https://github.com/user-attachments/assets/bee4b35e-413d-49e0-ba58-6ded5755cb58
 
 
