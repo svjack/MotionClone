@@ -63,7 +63,8 @@ config = {
     "model_config": model_config,
     "W": 512,
     "H": 512,
-    "L": 16
+    "L": 16,
+    "motion_guidance_blocks": ['up_blocks.1',]
 }
 
 # 写死 pretrained_model_path
@@ -127,7 +128,6 @@ def initialize_models():
     # 准备 UNet 的 attention 和 conv
     pipeline.unet = prep_unet_attention(pipeline.unet, config["motion_guidance_blocks"])
     pipeline.unet = prep_unet_conv(pipeline.unet)
-    pipeline.scheduler.customized_set_timesteps(config["inference_steps"], config["guidance_steps"], config["guidance_scale"], device=device, timestep_spacing_type="uneven")
     
     return pipeline
 
@@ -146,12 +146,14 @@ def generate_video(uploaded_video, motion_representation_save_dir, generated_vid
         "warm_up_steps": warm_up_steps,
         "cool_up_steps": cool_up_steps,
         "motion_guidance_weight": motion_guidance_weight,
-        "motion_guidance_blocks": motion_guidance_blocks,
+        #"motion_guidance_blocks": motion_guidance_blocks,
         "add_noise_step": add_noise_step
     })
     
     # 设置环境变量
     os.environ["CUDA_VISIBLE_DEVICES"] = visible_gpu or str(os.getenv('CUDA_VISIBLE_DEVICES', 0))
+
+    device = pipeline.device
     
     # 创建保存目录
     if not os.path.exists(generated_videos_save_dir):
@@ -159,14 +161,26 @@ def generate_video(uploaded_video, motion_representation_save_dir, generated_vid
     
     # 处理上传的视频
     if uploaded_video is not None:
+        pipeline.scheduler.customized_set_timesteps(config["inference_steps"], config["guidance_steps"], config["guidance_scale"], device=device, timestep_spacing_type="uneven")
+        
         # 将上传的视频保存到指定路径
         video_path = os.path.join(generated_videos_save_dir, os.path.basename(uploaded_video))
-        shutil.move(uploaded_video, video_path)
+        #shutil.move(uploaded_video, video_path)
+        shutil.copy2(uploaded_video, video_path)
+        
+        print("video_path :")
+        print(video_path)
         
         # 更新配置
         config["video_path"] = video_path
         config["new_prompt"] = new_prompt + config.get("positive_prompt", "")
-        pipeline.input_config, pipeline.unet.input_config = config, config
+
+        from types import SimpleNamespace
+        
+        pipeline.input_config, pipeline.unet.input_config = SimpleNamespace(**config), SimpleNamespace(**config)
+
+        print("pipeline.input_config.video_path :")
+        print(pipeline.input_config.video_path)
         
         # 提取运动表示
         seed_motion = seed if seed is not None else default_seed
@@ -184,6 +198,10 @@ def generate_video(uploaded_video, motion_representation_save_dir, generated_vid
         pipeline.input_config.seed = seed
         
         videos = pipeline.sample_video(generator=generator)
+
+        #print("videos :")
+        #print(videos)
+        
         videos = rearrange(videos, "b c f h w -> b f h w c")
         save_path = os.path.join(generated_videos_save_dir, os.path.splitext(os.path.basename(config["video_path"]))[0] + "_" + config["new_prompt"].strip().replace(' ', '_') + str(seed_motion) + "_" + str(seed) + '.mp4')
         videos_uint8 = (videos[0] * 255).astype(np.uint8)
@@ -197,14 +215,14 @@ def generate_video(uploaded_video, motion_representation_save_dir, generated_vid
 # 使用 Gradio Blocks 构建界面
 with gr.Blocks() as demo:
     # 页面标题和描述
-    gr.Markdown("# Text-to-Video Generation")
-    gr.Markdown("This tool allows you to generate videos from text prompts using a pre-trained model. Upload a video, provide a new prompt, and adjust the settings to create your custom video.")
+    gr.Markdown("# MotionClone-Text-to-Video Generation")
+    gr.Markdown("This tool allows you to generate videos from text prompts using a pre-trained model. Upload a motion reference video, provide a new prompt, and adjust the settings to create your custom video.")
 
     # 主要输入区域
     with gr.Row():
         with gr.Column():
             # 视频上传
-            uploaded_video = gr.Video(label="Upload Video", source="upload")
+            uploaded_video = gr.Video(label="Upload Video")
             # 新提示词
             new_prompt = gr.Textbox(label="New Prompt", value="A beautiful scene", lines=2)
             # 种子
@@ -246,6 +264,33 @@ with gr.Blocks() as demo:
         ],
         outputs=output_video
     )
+
+    # 定义示例数据
+    examples = [
+        {"video_path": "reference_videos/camera_zoom_in.mp4", "new_prompt": "Relics on the seabed", "seed": 42},
+        {"video_path": "reference_videos/camera_zoom_in.mp4", "new_prompt": "A road in the mountain", "seed": 42},
+        {"video_path": "reference_videos/camera_zoom_in.mp4", "new_prompt": "Caves, a path for exploration", "seed": 2026},
+        {"video_path": "reference_videos/camera_zoom_in.mp4", "new_prompt": "Railway for train", "seed": 2026},
+        {"video_path": "reference_videos/camera_zoom_out.mp4", "new_prompt": "Tree, in the mountain", "seed": 2026},
+        {"video_path": "reference_videos/camera_zoom_out.mp4", "new_prompt": "Red car on the track", "seed": 2026},
+        {"video_path": "reference_videos/camera_zoom_out.mp4", "new_prompt": "Man, standing in his garden.", "seed": 2026},
+        {"video_path": "reference_videos/camera_1.mp4", "new_prompt": "A island, on the ocean, sunny day", "seed": 42},
+        {"video_path": "reference_videos/camera_1.mp4", "new_prompt": "A tower, with fireworks", "seed": 42},
+        {"video_path": "reference_videos/camera_pan_up.mp4", "new_prompt": "Beautiful house, around with flowers", "seed": 42},
+        {"video_path": "reference_videos/camera_translation_2.mp4", "new_prompt": "Forest, in winter", "seed": 2028},
+        {"video_path": "reference_videos/camera_pan_down.mp4", "new_prompt": "Eagle, standing in the tree", "seed": 2026}
+    ]
+    examples = list(map(lambda d: [d["video_path"], d["new_prompt"], d["seed"]], examples))
+
+    # 添加示例
+    gr.Examples(
+        examples=examples,
+        inputs=[uploaded_video, new_prompt, seed],
+        outputs=output_video,
+        fn=generate_video,
+        cache_examples=False
+    )
+
 
 # 启动应用
 demo.launch(share = True)
