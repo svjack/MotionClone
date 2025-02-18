@@ -56,6 +56,17 @@ wget https://huggingface.co/guoyww/animatediff/resolve/main/v3_sd15_sparsectrl_r
 wget https://huggingface.co/guoyww/animatediff/resolve/main/v3_sd15_sparsectrl_scribble.ckpt -O models/SparseCtrl/v3_sd15_sparsectrl_scribble.ckpt
 ```
 
+# T2V APP 
+```bash
+python t2v_video_app.py
+```
+- OR
+```bash
+git clone https://huggingface.co/spaces/svjack/MotionClone-Text-to-Video && cd MotionClone-Text-to-Video
+pip install -r requirements.txt
+python t2v_video_app.py
+```
+
 ## 🖋 News
 - The latest version of our paper (**v4**) is available on arXiv! (10.08)
 - The latest version of our paper (**v3**) is available on arXiv! (7.2)
