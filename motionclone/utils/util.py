@@ -215,6 +215,8 @@ def load_weights(
     return animation_pipeline
 
 def video_preprocess(video_path, height, width, video_length, duration=None, sample_start_idx=0,):
+    #print("in video_preprocess:")
+    #print(video_path, height, width, video_length, duration, sample_start_idx)
     
     video_name = video_path.split('/')[-1].split('.')[0]
     vr = decord.VideoReader(video_path)
@@ -230,6 +232,16 @@ def video_preprocess(video_path, height, width, video_length, duration=None, sam
     sample_index = np.linspace(0, total_frames - 1, video_length, dtype=int)
     print(total_frames,sample_index)
     video = vr.get_batch(sample_index)
+
+    '''
+    print("after betch :")
+    print(video)
+    '''
+    import torch
+    if hasattr(video, "asnumpy"):
+        video = video.asnumpy()
+        video = torch.from_numpy(video)
+    
     video = rearrange(video, "f h w c -> f c h w")
 
     video = F.interpolate(video, size=(height, width), mode="bilinear", align_corners=True)
