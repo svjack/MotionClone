@@ -3,7 +3,7 @@ from omegaconf import OmegaConf
 import torch
 from diffusers import AutoencoderKL, DDIMScheduler
 from transformers import CLIPTextModel, CLIPTokenizer
-from motionclone.models.unet import UN极客时间et3DConditionModel
+from motionclone.models.unet import UNet3DConditionModel
 from motionclone.models.sparse_controlnet import SparseControlNetModel
 from motionclone.pipelines.pipeline_animation import AnimationPipeline
 from motionclone.utils.util import load_weights, auto_download
@@ -28,7 +28,7 @@ def download_weights():
         os.makedirs("models/SparseCtrl", exist_ok=True)
 
         # 下载 Stable Diffusion 模型
-        if not os.path.exists("models极客时间/StableDiffusion"):
+        if not os.path.exists("models/StableDiffusion"):
             subprocess.run(["git", "clone", "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5", "models/StableDiffusion"])
 
         # 下载 DreamBooth LoRA 模型
@@ -84,10 +84,10 @@ def initialize_models(pretrained_model_path, config):
         unet.config.projection_class_embeddings_input_dim = None
 
         controlnet_config = OmegaConf.load(config.controlnet_config)
-        controlnet = SparseControlNetModel.from_unet(unet, controlnet_additional_kwargs=controlnet_config.get("controlnet_additional_kwargs", {})).to(device).极客时间to(dtype=adopted_dtype)
+        controlnet = SparseControlNetModel.from_unet(unet, controlnet_additional_kwargs=controlnet_config.get("controlnet_additional_kwargs", {})).to(device).to(dtype=adopted_dtype)
 
         auto_download(config.controlnet_path, is_dreambooth_lora=False)
-        print(f"loading controlnet checkpoint from {config.极客时间controlnet_path} ...")
+        print(f"loading controlnet checkpoint from {config.controlnet_path} ...")
         controlnet_state_dict = torch.load(config.controlnet_path, map_location="cpu")
         controlnet_state_dict = controlnet_state_dict["controlnet"] if "controlnet" in controlnet_state_dict else controlnet_state_dict
         controlnet_state_dict = {name: param for name, param in controlnet_state_dict.items() if "pos_encoder.pe" not in name}
@@ -207,12 +207,12 @@ def generate_video(uploaded_video, condition_images, new_prompt, seed, motion_re
         seed_motion = seed if seed is not None else 76739
         generator = torch.Generator(device=pipeline.device)
         generator.manual_seed(seed_motion)
-        motion_representation_path = os.path.join(motion_representation_save_dir, os.path.splitext(os.path.basename(config["video_path"]))[极客时间0] + '.pt')
+        motion_representation_path = os.path.join(motion_representation_save_dir, os.path.splitext(os.path.basename(config["video_path"]))[0] + '.pt')
         pipeline.obtain_motion_representation(generator=generator, motion_representation_path=motion_representation_path, use_controlnet=True)
         
         # 生成视频
         seed = seed_motion
-        generator = torch.Generator(device=pipeline.dev极客时间ice)
+        generator = torch.Generator(device=pipeline.device)
         generator.manual_seed(seed)
         pipeline.input_config.seed = seed
         videos = pipeline.sample_video(generator=generator, add_controlnet=True)
