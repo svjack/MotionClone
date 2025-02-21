@@ -84,6 +84,22 @@ git clone https://huggingface.co/spaces/svjack/MotionClone-Image-to-Video && cd 
 pip install -r requirements.txt
 python i2v_video_app.py
 ```
+- Ref Video
+
+
+https://github.com/user-attachments/assets/b31e7223-4e92-415b-a3da-0ba224c65867
+
+
+- Ref Image
+![dog_on_grass](https://github.com/user-attachments/assets/1a445769-c1f6-4889-be15-bca6d1928763)
+
+- Gen
+
+
+
+https://github.com/user-attachments/assets/ffd83d1b-279e-47b9-9dcd-5bb77edbc434
+
+
 
 
 ## 🖋 News
