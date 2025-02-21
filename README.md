@@ -74,6 +74,17 @@ https://github.com/user-attachments/assets/5e833671-0827-4b10-a136-6f2fe3f34661
 
 https://github.com/user-attachments/assets/bee4b35e-413d-49e0-ba58-6ded5755cb58
 
+# I2V APP 
+```bash
+python i2v_video_app.py
+```
+- OR
+```bash
+git clone https://huggingface.co/spaces/svjack/MotionClone-Image-to-Video && cd MotionClone-Image-to-Video
+pip install -r requirements.txt
+python i2v_video_app.py
+```
+
 
 ## 🖋 News
 - The latest version of our paper (**v4**) is available on arXiv! (10.08)
