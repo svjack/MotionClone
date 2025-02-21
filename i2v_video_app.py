@@ -83,12 +83,12 @@ def initialize_models(pretrained_model_path, config):
         unet.config.num_attention_heads = 8
         unet.config.projection_class_embeddings_input_dim = None
 
-        controlnet_config = OmegaConf.load(config.controlnet_config)
+        controlnet_config = OmegaConf.load(config["controlnet_config"])
         controlnet = SparseControlNetModel.from_unet(unet, controlnet_additional_kwargs=controlnet_config.get("controlnet_additional_kwargs", {})).to(device).to(dtype=adopted_dtype)
 
-        auto_download(config.controlnet_path, is_dreambooth_lora=False)
-        print(f"loading controlnet checkpoint from {config.controlnet_path} ...")
-        controlnet_state_dict = torch.load(config.controlnet_path, map_location="cpu")
+        auto_download(config["controlnet_path"], is_dreambooth_lora=False)
+        print(f"loading controlnet checkpoint from ", config["controlnet_path"])
+        controlnet_state_dict = torch.load(config["controlnet_path"], map_location="cpu")
         controlnet_state_dict = controlnet_state_dict["controlnet"] if "controlnet" in controlnet_state_dict else controlnet_state_dict
         controlnet_state_dict = {name: param for name, param in controlnet_state_dict.items() if "pos_encoder.pe" not in name}
         controlnet_state_dict.pop("animatediff_config", "")
@@ -171,7 +171,7 @@ def generate_video(uploaded_video, condition_images, new_prompt, seed, motion_re
         "warm_up_steps": warm_up_steps,
         "cool_up_steps": cool_up_steps,
         "motion_guidance_weight": motion_guidance_weight,
-        "motion_guidance_blocks": motion_guidance_blocks,
+        #"motion_guidance_blocks": motion_guidance_blocks,
         "add_noise_step": add_noise_step
     })
     
